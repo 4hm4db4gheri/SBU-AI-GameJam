@@ -21,7 +21,6 @@ public class InputHandler : MonoBehaviour
     // Unity Events for Player Input component
     public void OnMove(InputAction.CallbackContext context)
     {
-        Debug.Log("On Move Called");
         MoveInput(context.ReadValue<Vector2>());
     }
 

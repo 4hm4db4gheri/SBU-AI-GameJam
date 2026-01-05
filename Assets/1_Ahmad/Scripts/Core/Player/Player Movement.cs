@@ -1,10 +1,18 @@
 using UnityEngine;
 
+[RequireComponent(typeof(InputHandler))]
+[RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] private InputHandler _inputHandler;
-    [SerializeField] private CharacterController _characterController;
+    private InputHandler _inputHandler;
+    private CharacterController _characterController;
     [SerializeField] private float moveSpeed = 5f;
+
+    private void Start()
+    {
+        _inputHandler = GetComponent<InputHandler>();
+        _characterController = GetComponent<CharacterController>();
+    }
 
     private void HandleMovement()
     {
@@ -16,6 +24,5 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         HandleMovement();
-        Debug.Log("Move Input: " + _inputHandler.move);
     }
 }
