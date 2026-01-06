@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(InputHandler))]
 public class PlayerShooting : MonoBehaviour
@@ -14,6 +15,7 @@ public class PlayerShooting : MonoBehaviour
     private void Update()
     {
         HandleShooting();
+        Debug.Log(Mouse.current.position.ReadValue());
     }
 
     private void HandleShooting()
