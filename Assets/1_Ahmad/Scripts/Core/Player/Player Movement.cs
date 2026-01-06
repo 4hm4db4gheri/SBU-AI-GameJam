@@ -7,8 +7,12 @@ public class PlayerMovement : MonoBehaviour
 {
     private InputHandler _inputHandler;
     private CharacterController _characterController;
+
+    [Header("Stats")]
+    [SerializeField] private StatsComponent _statsComponent;
+    [SerializeField] private StatDefinition _moveSpeedStat;
+
     [SerializeField] private Transform _playerShape;
-    [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float turnSmoothTime = 0.1f;
     [Header("Rotation While Shooting")]
     [SerializeField] private Camera _mainCamera;
@@ -17,6 +21,8 @@ public class PlayerMovement : MonoBehaviour
     {
         _inputHandler = GetComponent<InputHandler>();
         _characterController = GetComponent<CharacterController>();
+        if (_statsComponent == null)
+            _statsComponent = GetComponent<StatsComponent>();
         if (_mainCamera == null) _mainCamera = Camera.main;
     }
 
@@ -24,6 +30,7 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector2 moveInput = _inputHandler.move;
         Vector3 moveDirection = new(moveInput.x, 0, moveInput.y);
+        float moveSpeed = _statsComponent != null ? _statsComponent.Stats.GetValue(_moveSpeedStat, 5f) : 5f;
         _characterController.Move(moveSpeed * Time.deltaTime * moveDirection);
     }
     private void HandleRotation()
@@ -47,9 +54,9 @@ public class PlayerMovement : MonoBehaviour
             // float targetAngle = Mathf.Atan2(toHit.x, toHit.z) * Mathf.Rad2Deg;
             // float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             // transform.rotation = Quaternion.Euler(0f, angle, 0f);
-            
+
             Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
-            Vector3 mousePosition = new (0, 0, 0);
+            Vector3 mousePosition = new(0, 0, 0);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 mousePosition = hit.point;
@@ -62,7 +69,7 @@ public class PlayerMovement : MonoBehaviour
             float targetAngle = Mathf.Atan2(aimDirection.x, aimDirection.z) * Mathf.Rad2Deg;
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
-            
+
             return;
         }
 
@@ -72,7 +79,7 @@ public class PlayerMovement : MonoBehaviour
         float moveAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, moveTargetAngle, ref turnSmoothVelocity, turnSmoothTime);
         transform.rotation = Quaternion.Euler(0f, moveAngle, 0f);
     }
-    
+
     private void Update()
     {
         HandleMovement();

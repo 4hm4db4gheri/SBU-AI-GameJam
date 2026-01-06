@@ -573,7 +573,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe201f75ed4349d449c4688aa18d6561, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  _health: 100
+  _statsComponent: {fileID: 0}
+  _maxHealthStat: {fileID: 0}
+  _destroyOnDeath: 1
 --- !u!65 &1008713725
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -794,6 +796,7 @@ GameObject:
   - component: {fileID: 1568672187}
   - component: {fileID: 1568672192}
   - component: {fileID: 1568672191}
+  - component: {fileID: 1568672194}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -891,8 +894,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79244970fb994d94ab9c3fa37e5ff97a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
+  _statsComponent: {fileID: 1568672194}
+  _moveSpeedStat: {fileID: 11400000, guid: b006c32755a539b438e1dfd90e1e1ca1, type: 2}
   _playerShape: {fileID: 207948299}
-  moveSpeed: 5
   turnSmoothTime: 0.1
   _mainCamera: {fileID: 2000335180}
 --- !u!4 &1568672189
@@ -966,12 +970,26 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1568672186}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 362ca8e5ddadd5d4495a0bf46651d55b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerShooting
+  _statsComponent: {fileID: 0}
   _weapon: {fileID: 1943891580}
+--- !u!114 &1568672194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1568672186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 094ab76a933e2ac4aad6696a609ce0cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatsComponent
+  _config: {fileID: 11400000, guid: 889d74a5165a3e54bbc9edcd0c74a4df, type: 2}
 --- !u!1 &1828217567
 GameObject:
   m_ObjectHideFlags: 0
@@ -1101,10 +1119,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88b0c4289adcd144c82a4a16a131c5a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Weapon
-  _fireRate: 0.5
-  _criticalHitChance: 0.1
-  _criticalHitMultiplier: 2
-  _damage: 10
+  _statsComponent: {fileID: 0}
+  _damageStat: {fileID: 0}
+  _critChanceStat: {fileID: 0}
+  _critMultiplierStat: {fileID: 0}
+  _attacksPerSecondStat: {fileID: 0}
+  _rangeStat: {fileID: 0}
+  _ownerDamageMultiplierStat: {fileID: 0}
   _rayOriginOverride: {fileID: 661738835}
   _hitMask:
     serializedVersion: 2
@@ -1293,6 +1314,10 @@ PrefabInstance:
     - target: {fileID: 3960879644723491920, guid: 9c32f2e3b18a3a94fa0cb90a4ac1c2fd, type: 3}
       propertyPath: m_Name
       value: Assault_Rifle_M4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3960879644723491920, guid: 9c32f2e3b18a3a94fa0cb90a4ac1c2fd, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4448447718370701034, guid: 9c32f2e3b18a3a94fa0cb90a4ac1c2fd, type: 3}
       propertyPath: m_LocalScale.x
