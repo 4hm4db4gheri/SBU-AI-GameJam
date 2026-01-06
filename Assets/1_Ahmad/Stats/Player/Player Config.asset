@@ -10,9 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0a7f3901056c04a4cbe7b6033b15199f, type: 3}
-  m_Name: StatsConfig_
+  m_Name: Player Config
   m_EditorClassIdentifier: Assembly-CSharp::StatsConfig
   Entries:
   - Stat: {fileID: 11400000, guid: b006c32755a539b438e1dfd90e1e1ca1, type: 2}
-    BaseValue: 15
-    UseStatDefault: 0
+    BaseValue: 0
+    UseStatDefault: 1
+  - Stat: {fileID: 11400000, guid: 05ff98bee9f542d4d83b15a4bab1afd4, type: 2}
+    BaseValue: 0
+    UseStatDefault: 1

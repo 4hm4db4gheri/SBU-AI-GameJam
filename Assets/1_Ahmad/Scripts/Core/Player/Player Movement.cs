@@ -86,5 +86,12 @@ public class PlayerMovement : MonoBehaviour
         HandleRotation();
     }
 
+    //! Upgrade example for move speed
+    // public void UpgradeMoveSpeed()
+    // {
+    //     if (_moveSpeedStat.HasDefaultUpgrade)
+    //         _statsComponent.Stats.AddModifier(_moveSpeedStat, _moveSpeedStat.CreateDefaultUpgradeModifier(source: this));
+    // }
+
 
 }

@@ -791,11 +791,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1568672189}
-  - component: {fileID: 1568672193}
-  - component: {fileID: 1568672188}
   - component: {fileID: 1568672187}
   - component: {fileID: 1568672192}
+  - component: {fileID: 1568672193}
+  - component: {fileID: 1568672188}
   - component: {fileID: 1568672191}
+  - component: {fileID: 1568672195}
   - component: {fileID: 1568672194}
   m_Layer: 0
   m_Name: Player
@@ -970,12 +971,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1568672186}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 362ca8e5ddadd5d4495a0bf46651d55b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerShooting
-  _statsComponent: {fileID: 0}
+  _statsComponent: {fileID: 1568672194}
   _weapon: {fileID: 1943891580}
 --- !u!114 &1568672194
 MonoBehaviour:
@@ -990,6 +991,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StatsComponent
   _config: {fileID: 11400000, guid: 889d74a5165a3e54bbc9edcd0c74a4df, type: 2}
+--- !u!114 &1568672195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1568672186}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe201f75ed4349d449c4688aa18d6561, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  _statsComponent: {fileID: 1568672194}
+  _maxHealthStat: {fileID: 11400000, guid: 05ff98bee9f542d4d83b15a4bab1afd4, type: 2}
+  _destroyOnDeath: 1
 --- !u!1 &1828217567
 GameObject:
   m_ObjectHideFlags: 0
@@ -1119,12 +1135,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88b0c4289adcd144c82a4a16a131c5a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Weapon
-  _statsComponent: {fileID: 0}
-  _damageStat: {fileID: 0}
-  _critChanceStat: {fileID: 0}
-  _critMultiplierStat: {fileID: 0}
-  _attacksPerSecondStat: {fileID: 0}
-  _rangeStat: {fileID: 0}
+  _statsComponent: {fileID: 1943891582}
+  _damageStat: {fileID: 11400000, guid: 5d6fb162343b26e4e8c4ffd53becc6e1, type: 2}
+  _critChanceStat: {fileID: 11400000, guid: 70c1e5aa929576b489abc85d88375011, type: 2}
+  _critMultiplierStat: {fileID: 11400000, guid: f7b89ecfe4705314a8c664031ba87642, type: 2}
+  _attacksPerSecondStat: {fileID: 11400000, guid: 46fe7f4a5cc49c54293bb68d988b2b78, type: 2}
+  _rangeStat: {fileID: 11400000, guid: 7d0a9488c7f51a649bc20ec3715fa2b9, type: 2}
   _ownerDamageMultiplierStat: {fileID: 0}
   _rayOriginOverride: {fileID: 661738835}
   _hitMask:
@@ -1133,6 +1149,19 @@ MonoBehaviour:
   _drawRayGizmos: 1
   _weaponForwardColor: {r: 0, g: 1, b: 0, a: 1}
   _gizmoRayLength: 25
+--- !u!114 &1943891582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1943891578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 094ab76a933e2ac4aad6696a609ce0cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatsComponent
+  _config: {fileID: 11400000, guid: a8b240f3f87ec764c892098a2527ec26, type: 2}
 --- !u!1 &2000335178
 GameObject:
   m_ObjectHideFlags: 0
@@ -1402,6 +1431,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3960879644723491920, guid: 9c32f2e3b18a3a94fa0cb90a4ac1c2fd, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1943891580}
+    - targetCorrespondingSourceObject: {fileID: 3960879644723491920, guid: 9c32f2e3b18a3a94fa0cb90a4ac1c2fd, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1943891582}
   m_SourcePrefab: {fileID: 100100000, guid: 9c32f2e3b18a3a94fa0cb90a4ac1c2fd, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
