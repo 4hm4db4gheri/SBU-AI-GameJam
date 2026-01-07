@@ -12,6 +12,9 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController _characterController;
     private PlayerAnimations _playerAnimations;
     private Health _health;
+    [Header("Aim (match weapon gizmo)")]
+    [Tooltip("If set, player rotation while aiming/shooting will match this weapon's aim ray direction (green gizmo ray). If null, a Weapon will be found in children.")]
+    [SerializeField] private Weapon _weaponForAim;
 
     [Header("Stats")]
     [SerializeField] private StatsComponent _statsComponent;
@@ -42,6 +45,7 @@ public class PlayerMovement : MonoBehaviour
         _health = GetComponent<Health>();
         if (_statsComponent == null) _statsComponent = GetComponent<StatsComponent>();
         if (_mainCamera == null) _mainCamera = Camera.main;
+        if (_weaponForAim == null) _weaponForAim = GetComponentInChildren<Weapon>();
     }
 
     private void HandleMovement()
@@ -66,19 +70,17 @@ public class PlayerMovement : MonoBehaviour
     {
         if (_isRolling) return;
 
-        if (_inputHandler.shoot)
+        // While aiming/shooting, match the weapon's aim direction exactly (angle to green gizmo ray becomes 0).
+        if (_inputHandler.aim || _inputHandler.shoot)
         {
-            Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
-            Vector3 mousePosition = new(0, 0, 0);
-            if (Physics.Raycast(ray, out RaycastHit hit))
-            {
-                mousePosition = hit.point;
-            }
+            if (_weaponForAim == null) return;
 
-            Vector3 aimDirection = mousePosition - transform.position;
+            Ray aimRay = _weaponForAim.GetAimRay();
+            Vector3 aimDirection = aimRay.direction;
             aimDirection.y = 0f;
             if (aimDirection.sqrMagnitude < 0.0001f) return;
             aimDirection.Normalize();
+
             float targetAngle = Mathf.Atan2(aimDirection.x, aimDirection.z) * Mathf.Rad2Deg;
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);

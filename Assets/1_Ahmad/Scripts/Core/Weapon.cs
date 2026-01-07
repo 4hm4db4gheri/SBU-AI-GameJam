@@ -21,7 +21,11 @@ public class Weapon : MonoBehaviour
 
     [Header("Hitscan")]
     [Tooltip("If set, raycast will start from here. Otherwise Camera.main is used (fallback: muzzlePosition if available).")]
-    [SerializeField] private Transform _rayOriginOverride;
+    [SerializeField] private Transform _frontGun;
+    [SerializeField] private bool _useBulletPrefab = false;
+    [SerializeField] private GameObject _bulletPrefab;
+    [SerializeField] private float _bulletSpeed = 100f;
+    [SerializeField] private float _bulletLifeTime = 1f;
     [Tooltip("Raycast direction comes from Camera.main forward by default; disable to use origin forward.")]
     [SerializeField] private LayerMask _hitMask = ~0;
 
@@ -53,7 +57,58 @@ public class Weapon : MonoBehaviour
             return;
 
         _gunfireController.FireWeapon();
+
+        if (_useBulletPrefab)
+        {
+            FireBulletPrefab();
+            return;
+        }
+
         TryApplyHitscanDamage();
+    }
+
+    /// <summary>
+    /// Returns the current aim ray used by this weapon (same as the debug gizmo ray).
+    /// Useful for rotating the player/character so their forward matches the weapon aim direction.
+    /// </summary>
+    public Ray GetAimRay()
+    {
+        GetRay(out var ray);
+        return ray;
+    }
+
+    private void FireBulletPrefab()
+    {
+        if (_bulletPrefab == null)
+            return;
+
+        GetRay(out var ray);
+        float finalDamage = ComputeDamage(out bool isCritical);
+
+        Quaternion rot = ray.direction.sqrMagnitude > 0.0001f
+            ? Quaternion.LookRotation(ray.direction, Vector3.up)
+            : (_frontGun != null ? _frontGun.rotation : transform.rotation);
+
+        GameObject bullet = Instantiate(_bulletPrefab, ray.origin, rot);
+
+        var bulletComponent = bullet.GetComponent<Bullet>();
+        if (bulletComponent == null)
+            bulletComponent = bullet.AddComponent<Bullet>();
+
+        bulletComponent.Initialize(finalDamage, isCritical, ownerRoot: transform.root, hitMask: _hitMask);
+
+        // If the prefab has no Rigidbody, add one so it can move forward.
+        Rigidbody rb = bullet.GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            rb = bullet.AddComponent<Rigidbody>();
+            rb.useGravity = false;
+        }
+
+        rb.linearVelocity = ray.direction.normalized * Mathf.Max(0f, _bulletSpeed);
+
+        float life = Mathf.Max(0.01f, _bulletLifeTime);
+        Destroy(bullet, life);
     }
 
     private bool CanShootNow()
@@ -121,9 +176,9 @@ public class Weapon : MonoBehaviour
     {
         // Choose ray origin (gun height reference)
         Vector3 origin;
-        if (_rayOriginOverride != null)
+        if (_frontGun != null)
         {
-            origin = _rayOriginOverride.position;
+            origin = _frontGun.position;
         }
         else if (_gunfireController != null && _gunfireController.muzzlePosition != null)
         {
@@ -167,7 +222,7 @@ public class Weapon : MonoBehaviour
         }
 
         // No camera available: fallback to gun/weapon forward.
-        Vector3 forward = _rayOriginOverride != null ? _rayOriginOverride.forward : transform.forward;
+        Vector3 forward = _frontGun != null ? _frontGun.forward : transform.forward;
         ray = new Ray(origin, forward);
     }
 
@@ -184,3 +239,4 @@ public class Weapon : MonoBehaviour
         Gizmos.DrawRay(ray.origin, ray.direction * length);
     }
 }
+
