@@ -40,6 +40,8 @@ public class PlayerMovement : MonoBehaviour
         _characterController = GetComponent<CharacterController>();
         _playerAnimations = GetComponent<PlayerAnimations>();
         _health = GetComponent<Health>();
+        if (_statsComponent == null) _statsComponent = GetComponent<StatsComponent>();
+        if (_mainCamera == null) _mainCamera = Camera.main;
     }
 
     private void HandleMovement()
@@ -126,6 +128,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void StartRoll()
     {
+        if (_rollAnimation == null) return;
+
         _health.Invulnerable(_rollAnimation.length);
         _rollSpeed = GetCurrentMoveSpeed() * 2f;
 
@@ -135,6 +139,13 @@ public class PlayerMovement : MonoBehaviour
         // Prefer Roll in input direction (works well for strafing while shooting),
         // otherwise Roll forward from current facing.
         _rollDirection = inputDirection.sqrMagnitude > 0.001f ? inputDirection.normalized : transform.forward.normalized;
+
+        // Ensure the character is facing the roll direction before the roll starts.
+        // This prevents cases where movement input changed but rotation smoothing hasn't caught up yet.
+        if (_rollDirection.sqrMagnitude > 0.0001f)
+        {
+            transform.rotation = Quaternion.LookRotation(_rollDirection, Vector3.up);
+        }
 
         _isRolling = true;
         _rollTimeRemaining = _rollAnimation.length;
