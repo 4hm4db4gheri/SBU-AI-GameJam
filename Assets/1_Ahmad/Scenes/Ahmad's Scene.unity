@@ -1037,12 +1037,12 @@ MonoBehaviour:
   _critMultiplierStat: {fileID: 11400000, guid: f7b89ecfe4705314a8c664031ba87642, type: 2}
   _attacksPerSecondStat: {fileID: 11400000, guid: 46fe7f4a5cc49c54293bb68d988b2b78, type: 2}
   _rangeStat: {fileID: 11400000, guid: 7d0a9488c7f51a649bc20ec3715fa2b9, type: 2}
+  _bulletSpeedStat: {fileID: 11400000, guid: 6e5f8b9746fbf2a439bd8c0634a0cd5e, type: 2}
+  _bulletLifeTimeStat: {fileID: 11400000, guid: f4bd720c0f673e540b4d1bde9e394ee7, type: 2}
   _ownerDamageMultiplierStat: {fileID: 0}
   _frontGun: {fileID: 661738835}
   _useBulletPrefab: 1
   _bulletPrefab: {fileID: 5480272470971086841, guid: c402f3893f25b7046868f3962d269de6, type: 3}
-  _bulletSpeed: 100
-  _bulletLifeTime: 1
   _hitMask:
     serializedVersion: 2
     m_Bits: 64

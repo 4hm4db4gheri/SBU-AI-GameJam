@@ -28,3 +28,9 @@ MonoBehaviour:
   - Stat: {fileID: 11400000, guid: 7d0a9488c7f51a649bc20ec3715fa2b9, type: 2}
     BaseValue: 0
     UseStatDefault: 1
+  - Stat: {fileID: 11400000, guid: f4bd720c0f673e540b4d1bde9e394ee7, type: 2}
+    BaseValue: 0
+    UseStatDefault: 1
+  - Stat: {fileID: 11400000, guid: 6e5f8b9746fbf2a439bd8c0634a0cd5e, type: 2}
+    BaseValue: 0
+    UseStatDefault: 1

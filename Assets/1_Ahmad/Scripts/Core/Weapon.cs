@@ -14,6 +14,8 @@ public class Weapon : MonoBehaviour
     [Tooltip("Interpretation: attacks per second. Cooldown = 1 / APS.")]
     [SerializeField] private StatDefinition _attacksPerSecondStat;
     [SerializeField] private StatDefinition _rangeStat;
+    [SerializeField] private StatDefinition _bulletSpeedStat;
+    [SerializeField] private StatDefinition _bulletLifeTimeStat;
 
     [Header("Optional Stats (Owner)")]
     [Tooltip("If assigned and an owner StatsContainer is set, final damage is multiplied by this value (base should usually be 1).")]
@@ -24,8 +26,7 @@ public class Weapon : MonoBehaviour
     [SerializeField] private Transform _frontGun;
     [SerializeField] private bool _useBulletPrefab = false;
     [SerializeField] private GameObject _bulletPrefab;
-    [SerializeField] private float _bulletSpeed = 100f;
-    [SerializeField] private float _bulletLifeTime = 1f;
+
     [Tooltip("Raycast direction comes from Camera.main forward by default; disable to use origin forward.")]
     [SerializeField] private LayerMask _hitMask = ~0;
 
@@ -105,9 +106,9 @@ public class Weapon : MonoBehaviour
             rb.useGravity = false;
         }
 
-        rb.linearVelocity = ray.direction.normalized * Mathf.Max(0f, _bulletSpeed);
+        rb.linearVelocity = ray.direction.normalized * Mathf.Max(0f, GetWeaponStat(_bulletSpeedStat, fallback: 100f));
 
-        float life = Mathf.Max(0.01f, _bulletLifeTime);
+        float life = Mathf.Max(0.01f, GetWeaponStat(_bulletLifeTimeStat, fallback: 1f));
         Destroy(bullet, life);
     }
 
