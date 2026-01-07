@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DOOGH — Stats System Guide</title>
+    <style>
+      :root {
+        --bg: #0b0f17;
+        --panel: #121a26;
+        --text: #e6edf3;
+        --muted: #9fb0c0;
+        --accent: #7dd3fc;
+        --border: #223047;
+      }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      header {
+        padding: 24px 20px;
+        border-bottom: 1px solid var(--border);
+        background: linear-gradient(180deg, #0b0f17, #0b0f17 30%, #0b0f17cc);
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-size: 20px;
+      }
+      p {
+        margin: 10px 0;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 18px 16px 60px;
+      }
+      section {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        margin: 14px 0;
+      }
+      h2 {
+        margin: 0 0 10px;
+        font-size: 16px;
+      }
+      h3 {
+        margin: 14px 0 8px;
+        font-size: 14px;
+        color: var(--accent);
+      }
+      ul {
+        margin: 8px 0 0 18px;
+        color: var(--muted);
+      }
+      li {
+        margin: 6px 0;
+      }
+      code,
+      pre {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas,
+          "Liberation Mono", monospace;
+      }
+      code {
+        background: #0b1320;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 2px 6px;
+        color: var(--text);
+      }
+      pre {
+        background: #0b1320;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px;
+        overflow: auto;
+        color: var(--text);
+      }
+      .note {
+        border-left: 3px solid var(--accent);
+        padding-left: 12px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+      }
+      .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        color: var(--muted);
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div style="max-width: 980px; margin: 0 auto">
+        <h1>DOOGH — Stats System Guide</h1>
+        <p>
+          How to use the stat system you now have in your Unity project:
+          <code>StatDefinition</code>, <code>StatsConfig</code>,
+          <code>StatsComponent</code>, modifiers, and derived stats.
+        </p>
+      </div>
+    </header>
+    <main>
+      <section>
+        <h2>1) What you have (files)</h2>
+        <p>These scripts live in <code>Assets/1_Ahmad/Scripts/Stats/</code>.</p>
+        <div class="grid">
+          <div>
+            <h3>Data</h3>
+            <ul>
+              <li>
+                <code>StatDefinition</code>: a ScriptableObject describing one
+                stat (key, default base value, optional clamp).
+              </li>
+              <li>
+                <code>StatsConfig</code>: a ScriptableObject list of base values
+                for an entity (player/weapon/enemy).
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3>Runtime</h3>
+            <ul>
+              <li>
+                <code>StatsContainer</code>: owns many
+                <code>StatInstance</code>, supports modifiers + computed stats.
+              </li>
+              <li>
+                <code>StatInstance</code>: cached final value with Flat /
+                PercentAdd / Mult modifier stacking.
+              </li>
+              <li>
+                <code>StatModifier</code>, <code>StatModifierType</code>,
+                <code>ModifierHandle</code>.
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3>Unity bridge / gameplay helpers</h3>
+            <ul>
+              <li>
+                <code>StatsComponent</code>: MonoBehaviour wrapper that creates
+                a runtime <code>StatsContainer</code> and applies a
+                <code>StatsConfig</code>.
+              </li>
+              <li>
+                <code>StatModifierApplier</code>: apply buffs/debuffs/upgrades
+                (optionally timed).
+              </li>
+            </ul>
+          </div>
+        </div>
+        <p class="note">
+          Rule of thumb: gameplay code should ask
+          <code>StatsContainer</code> for values and apply game rules; it should
+          not own tuning floats.
+        </p>
+      </section>
+
+      <section>
+        <h2>2) Create the stat assets (one-time setup)</h2>
+        <p>
+          For each stat your game supports, create a
+          <code>StatDefinition</code> asset.
+        </p>
+        <h3>Recommended stat list (start)</h3>
+        <ul>
+          <li>
+            <span class="pill">Entity</span> <code>MaxHP</code> (Clamp: true,
+            Min 1, Max something large)
+          </li>
+          <li>
+            <span class="pill">Entity</span> <code>MoveSpeed</code> (Clamp:
+            true, Min 0)
+          </li>
+          <li>
+            <span class="pill">Weapon</span> <code>Damage</code> (Clamp: true,
+            Min 0)
+          </li>
+          <li>
+            <span class="pill">Weapon</span> <code>CritChance</code> (Clamp:
+            true, Min 0, Max 1)
+          </li>
+          <li>
+            <span class="pill">Weapon</span> <code>CritMultiplier</code> (Clamp:
+            true, Min 1)
+          </li>
+          <li>
+            <span class="pill">Weapon</span>
+            <code>AttacksPerSecond</code> (Clamp: true, Min 0)
+          </li>
+          <li>
+            <span class="pill">Weapon</span> <code>Range</code> (Clamp: true,
+            Min 0.01)
+          </li>
+        </ul>
+
+        <h3>Unity steps</h3>
+        <ul>
+          <li>
+            Right click in Project window →
+            <b>Create → DOOGH → Stats → Stat Definition</b>.
+          </li>
+          <li>
+            Name it (e.g. <code>Stat_MaxHP</code>), set <code>Key</code> (e.g.
+            <code>MaxHP</code>) and defaults/clamp.
+          </li>
+          <li>Repeat for each stat.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>3) Create per-entity configs (data-driven)</h2>
+        <p>
+          Now create a <code>StatsConfig</code> for each entity/weapon type,
+          then assign it to that object’s <code>StatsComponent</code>.
+        </p>
+        <h3>Unity steps</h3>
+        <ul>
+          <li>Right click → <b>Create → DOOGH → Stats → Stats Config</b>.</li>
+          <li>
+            Add entries:
+            <ul>
+              <li>
+                Pick a <code>StatDefinition</code> (e.g. <code>MaxHP</code>)
+              </li>
+              <li>
+                Either use the stat’s default or override with
+                <code>BaseValue</code>
+              </li>
+            </ul>
+          </li>
+          <li>
+            Add a <code>StatsComponent</code> to your Player/Enemy/Weapon
+            GameObject and assign that config.
+          </li>
+        </ul>
+        <p class="note">
+          You can reuse the same <code>StatsConfig</code> across many enemies of
+          the same type.
+        </p>
+      </section>
+
+      <section>
+        <h2>4) How gameplay uses stats (your current scripts)</h2>
+
+        <h3>Movement Speed → PlayerMovement</h3>
+        <p>
+          <code>PlayerMovement</code> reads <code>MoveSpeed</code> from the
+          Player’s <code>StatsComponent</code> and uses it for
+          <code>CharacterController.Move</code>.
+        </p>
+
+        <h3>MaxHP → Health</h3>
+        <p>
+          <code>Health</code> reads <code>MaxHP</code> and clamps current HP if
+          MaxHP changes (e.g. from an upgrade).
+        </p>
+
+        <h3>Damage/Crit/Attack Speed/Range → Weapon</h3>
+        <p>
+          <code>Weapon</code> reads weapon stats from the weapon’s own
+          <code>StatsComponent</code>:
+        </p>
+        <ul>
+          <li><code>Damage</code>: base damage</li>
+          <li><code>CritChance</code>: 0..1</li>
+          <li><code>CritMultiplier</code>: 1+ (2 means double damage)</li>
+          <li>
+            <code>AttacksPerSecond</code>: controls cooldown (<code
+              >1 / APS</code
+            >)
+          </li>
+          <li><code>Range</code>: raycast distance limit</li>
+        </ul>
+        <p>
+          And <code>PlayerShooting</code> passes the Player’s stats into the
+          weapon via <code>weapon.SetOwnerStats(playerStats)</code> so you can
+          also scale damage by player upgrades later.
+        </p>
+      </section>
+
+      <section>
+        <h2>5) Applying upgrades, buffs, debuffs</h2>
+        <p>
+          Use <code>StatModifierApplier</code> when you want a practical
+          “designer-friendly” component to apply modifiers via the Inspector.
+        </p>
+        <p>
+          You can also set a per-stat <b>Default Upgrade</b> on
+          <code>StatDefinition</code> and have all upgrade logic use that,
+          instead of hard-coded numbers.
+        </p>
+
+        <h3>Example: +20% move speed for 5 seconds</h3>
+        <ul>
+          <li>
+            Add <code>StatModifierApplier</code> to the Player GameObject.
+          </li>
+          <li>Set Target to Player’s <code>StatsComponent</code>.</li>
+          <li>
+            Add an entry:
+            <ul>
+              <li>Stat: <code>MoveSpeed</code></li>
+              <li>Type: <code>PercentAdd</code></li>
+              <li>Value: <code>0.2</code> (means +20%)</li>
+              <li>DurationSeconds: <code>5</code></li>
+            </ul>
+          </li>
+        </ul>
+
+        <h3>Stacking rules (important)</h3>
+        <ul>
+          <li><b>Flat</b>: summed first (e.g. +5 Damage)</li>
+          <li>
+            <b>PercentAdd</b>: summed once (e.g. +10% and +20% becomes +30%)
+          </li>
+          <li>
+            <b>Mult</b>: applied one-by-one (e.g. +10% mult then +10% mult
+            becomes 1.1 * 1.1)
+          </li>
+        </ul>
+        <p class="note">
+          For Vampire-Survivors-like balance, most “increases” are either
+          <code>PercentAdd</code> or <code>Mult</code>. Use Flat for base
+          boosts.
+        </p>
+
+        <h3>Using StatDefinition “Default Upgrade” (recommended)</h3>
+        <ul>
+          <li>Open your <code>StatDefinition</code> (e.g. MoveSpeed).</li>
+          <li>Enable <code>HasDefaultUpgrade</code>.</li>
+          <li>
+            Set:
+            <ul>
+              <li>
+                <code>DefaultUpgradeType</code> (Flat / PercentAdd / Mult)
+              </li>
+              <li>
+                <code>DefaultUpgradeValue</code> (e.g. Flat 10, or PercentAdd
+                0.1 for +10%)
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <pre><code>// Example usage from code (keypress, pickup, level-up, etc):
+// stats is a StatsContainer, moveSpeedDef is a StatDefinition
+if (moveSpeedDef.HasDefaultUpgrade)
+    stats.AddModifier(moveSpeedDef, moveSpeedDef.CreateDefaultUpgradeModifier(source: this));</code></pre>
+      </section>
+
+      <section>
+        <h2>6) Derived/computed stats (when you need them)</h2>
+        <p>
+          Sometimes a stat should be derived from other stats (example:
+          “EffectiveMoveSpeed” = MoveSpeed * (1 + SlowResistance)). You can
+          register a computed stat at runtime.
+        </p>
+        <p>
+          Where to do it: a good place is a small setup script on the entity (or
+          in a factory/spawner) after <code>StatsComponent</code> exists.
+        </p>
+
+        <pre><code>// Example setup script (attach to Player or call from a spawner)
+public sealed class PlayerStatsSetup : MonoBehaviour
+{
+    [SerializeField] private StatsComponent stats;
+    [SerializeField] private StatDefinition moveSpeed;
+    [SerializeField] private StatDefinition slowResist;     // 0..1
+    [SerializeField] private StatDefinition effectiveMove;  // output stat
+
+    private void Awake()
+    {
+        if (stats == null) stats = GetComponent&lt;StatsComponent&gt;();
+
+        stats.Stats.RegisterComputed(
+            effectiveMove,
+            s =&gt; s.GetValue(moveSpeed, 5f) * (1f + s.GetValue(slowResist, 0f)),
+            moveSpeed, slowResist
+        );
+    }
+}</code></pre>
+
+        <p class="note">
+          Computed stats set the <b>base</b> value from other stats, but can
+          still receive modifiers like any other stat.
+        </p>
+      </section>
+
+      <section>
+        <h2>7) Quick checklist (to make it work in-scene)</h2>
+        <ul>
+          <li>
+            Player GameObject has:
+            <ul>
+              <li>
+                <code>StatsComponent</code> assigned to a Player
+                <code>StatsConfig</code>
+              </li>
+              <li><code>Health</code> with <code>MaxHP</code> stat assigned</li>
+              <li>
+                <code>PlayerMovement</code> with <code>MoveSpeed</code> stat
+                assigned
+              </li>
+              <li><code>PlayerShooting</code> with a reference to a Weapon</li>
+            </ul>
+          </li>
+          <li>
+            Weapon GameObject has:
+            <ul>
+              <li>
+                <code>StatsComponent</code> assigned to a Weapon
+                <code>StatsConfig</code>
+              </li>
+              <li>
+                <code>Weapon</code> fields wired to the right stat definitions
+                (Damage/Crit/etc)
+              </li>
+            </ul>
+          </li>
+          <li>
+            Targets have:
+            <ul>
+              <li><code>Health</code> (implements <code>IDamageable</code>)</li>
+              <li>Collider (raycast can hit)</li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>8) Practical indie workflow tips</h2>
+        <ul>
+          <li>
+            Keep stats <b>keyed and stable</b> (don’t rename keys after
+            shipping).
+          </li>
+          <li>
+            Prefer creating new stats as assets (no code changes) and just
+            wiring them in the Inspector.
+          </li>
+          <li>
+            Use configs for “base identity” (what the weapon/enemy is) and
+            modifiers for “runtime changes” (upgrades/buffs).
+          </li>
+          <li>
+            Avoid reading <code>StatsComponent</code> in 20 different scripts;
+            instead wire the exact <code>StatDefinition</code> references you
+            need (like you already do in <code>Weapon</code> and
+            <code>Health</code>).
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Next step (tell me what you want)</h2>
+        <p>
+          Say what upgrade/buff system you want next (examples: roguelike
+          level-ups, permanent meta progression, timed auras, item pickups), and
+          I’ll implement the next layer on top of these stats without turning
+          your project into a god-class.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

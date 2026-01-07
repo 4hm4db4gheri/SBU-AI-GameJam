@@ -1,17 +1,20 @@
 using UnityEngine;
 
 [RequireComponent(typeof(InputHandler))]
+[RequireComponent(typeof(PlayerMovement))]
+[RequireComponent(typeof(StatsComponent))]
 public class PlayerShooting : MonoBehaviour
 {
     private InputHandler _inputHandler;
+    private PlayerMovement _playerMovement;
     [SerializeField] private StatsComponent _statsComponent;
     [SerializeField] private Weapon _weapon;
 
     private void Start()
     {
         _inputHandler = GetComponent<InputHandler>();
-        if (_statsComponent == null)
-            _statsComponent = GetComponent<StatsComponent>();
+        _playerMovement = GetComponent<PlayerMovement>();
+        _statsComponent = GetComponent<StatsComponent>();
 
         if (_weapon != null && _statsComponent != null)
             _weapon.SetOwnerStats(_statsComponent.Stats);
@@ -24,7 +27,7 @@ public class PlayerShooting : MonoBehaviour
 
     private void HandleShooting()
     {
-        if (_inputHandler.shoot)
+        if (_inputHandler.shoot && !_playerMovement.IsRolling)
         {
             _weapon.Shoot();
         }
