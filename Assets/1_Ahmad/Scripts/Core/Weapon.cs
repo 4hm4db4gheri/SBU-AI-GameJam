@@ -119,29 +119,56 @@ public class Weapon : MonoBehaviour
 
     private void GetRay(out Ray ray)
     {
+        // Choose ray origin (gun height reference)
+        Vector3 origin;
         if (_rayOriginOverride != null)
         {
-            ray = new Ray(_rayOriginOverride.position, _rayOriginOverride.forward);
-            return;
+            origin = _rayOriginOverride.position;
+        }
+        else if (_gunfireController != null && _gunfireController.muzzlePosition != null)
+        {
+            origin = _gunfireController.muzzlePosition.transform.position;
+        }
+        else
+        {
+            origin = transform.position;
         }
 
         if (_mainCamera == null)
             _mainCamera = Camera.main;
 
+        // If we have a camera, aim toward mouse world position (but keep gun height).
         if (_mainCamera != null)
         {
-            ray = new Ray(_mainCamera.transform.position, _mainCamera.transform.forward);
+            Ray mouseRay = _mainCamera.ScreenPointToRay(Input.mousePosition);
+
+            Vector3 aimPoint;
+            if (Physics.Raycast(mouseRay, out var aimHit, 5000f, _hitMask))
+            {
+                aimPoint = aimHit.point;
+            }
+            else
+            {
+                // Fallback: intersect with a horizontal plane at gun height.
+                var plane = new Plane(Vector3.up, new Vector3(0f, origin.y, 0f));
+                if (plane.Raycast(mouseRay, out float enter))
+                    aimPoint = mouseRay.GetPoint(enter);
+                else
+                    aimPoint = origin + transform.forward;
+            }
+
+            aimPoint.y = origin.y;
+            Vector3 dir = aimPoint - origin;
+            if (dir.sqrMagnitude < 0.0001f)
+                dir = transform.forward;
+
+            ray = new Ray(origin, dir.normalized);
             return;
         }
 
-        if (_gunfireController != null && _gunfireController.muzzlePosition != null)
-        {
-            var t = _gunfireController.muzzlePosition.transform;
-            ray = new Ray(t.position, t.forward);
-            return;
-        }
-
-        ray = new Ray(transform.position, transform.forward);
+        // No camera available: fallback to gun/weapon forward.
+        Vector3 forward = _rayOriginOverride != null ? _rayOriginOverride.forward : transform.forward;
+        ray = new Ray(origin, forward);
     }
 
     private void OnDrawGizmos()
