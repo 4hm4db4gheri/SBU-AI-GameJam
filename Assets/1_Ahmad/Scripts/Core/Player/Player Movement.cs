@@ -11,8 +11,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Stats")]
     [SerializeField] private StatsComponent _statsComponent;
     [SerializeField] private StatDefinition _moveSpeedStat;
-
-    [SerializeField] private Transform _playerShape;
+    [SerializeField] private StatDefinition _moveSpeedWhileShootingStat;
     [SerializeField] private float turnSmoothTime = 0.1f;
     [Header("Rotation While Shooting")]
     [SerializeField] private Camera _mainCamera;
@@ -30,7 +29,15 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector2 moveInput = _inputHandler.move;
         Vector3 moveDirection = new(moveInput.x, 0, moveInput.y);
-        float moveSpeed = _statsComponent != null ? _statsComponent.Stats.GetValue(_moveSpeedStat, 5f) : 5f;
+        float moveSpeed;
+        if (_inputHandler.shoot)
+        {
+            moveSpeed = _statsComponent != null ? _statsComponent.Stats.GetValue(_moveSpeedWhileShootingStat, 5f) : 5f;
+        }
+        else
+        {
+            moveSpeed = _statsComponent != null ? _statsComponent.Stats.GetValue(_moveSpeedStat, 5f) : 5f;
+        }
         _characterController.Move(moveSpeed * Time.deltaTime * moveDirection);
     }
     private void HandleRotation()
