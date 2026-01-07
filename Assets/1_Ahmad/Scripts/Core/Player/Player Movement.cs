@@ -3,15 +3,33 @@ using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(InputHandler))]
 [RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(StatsComponent))]
+[RequireComponent(typeof(PlayerAnimations))]
+[RequireComponent(typeof(Health))]
 public class PlayerMovement : MonoBehaviour
 {
     private InputHandler _inputHandler;
     private CharacterController _characterController;
+    private PlayerAnimations _playerAnimations;
+    private Health _health;
 
     [Header("Stats")]
     [SerializeField] private StatsComponent _statsComponent;
     [SerializeField] private StatDefinition _moveSpeedStat;
     [SerializeField] private StatDefinition _moveSpeedWhileShootingStat;
+    [SerializeField] private StatDefinition _rollCooldownStat;
+
+    [Header("Roll")]
+    [SerializeField] private AnimationClip _rollAnimation;
+    private float _rollSpeed;
+    private bool _canRoll = true;
+    private bool _isRolling = false;
+    public bool IsRolling { get => _isRolling; }
+    private float _rollTimeRemaining = 0f;
+    private float RollTimer = 0f;
+    private Vector3 _rollDirection = Vector3.forward;
+    private bool _rollPressedLastFrame = false;
+    [Header("Rotation")]
     [SerializeField] private float turnSmoothTime = 0.1f;
     [Header("Rotation While Shooting")]
     [SerializeField] private Camera _mainCamera;
@@ -20,48 +38,34 @@ public class PlayerMovement : MonoBehaviour
     {
         _inputHandler = GetComponent<InputHandler>();
         _characterController = GetComponent<CharacterController>();
-        if (_statsComponent == null)
-            _statsComponent = GetComponent<StatsComponent>();
-        if (_mainCamera == null) _mainCamera = Camera.main;
+        _playerAnimations = GetComponent<PlayerAnimations>();
+        _health = GetComponent<Health>();
     }
 
     private void HandleMovement()
     {
+        if (_isRolling) return;
         Vector2 moveInput = _inputHandler.move;
         Vector3 moveDirection = new(moveInput.x, 0, moveInput.y);
-        float moveSpeed;
-        if (_inputHandler.shoot)
-        {
-            moveSpeed = _statsComponent != null ? _statsComponent.Stats.GetValue(_moveSpeedWhileShootingStat, 5f) : 5f;
-        }
-        else
-        {
-            moveSpeed = _statsComponent != null ? _statsComponent.Stats.GetValue(_moveSpeedStat, 5f) : 5f;
-        }
+        float moveSpeed = GetCurrentMoveSpeed();
         _characterController.Move(moveSpeed * Time.deltaTime * moveDirection);
+    }
+
+    private float GetCurrentMoveSpeed()
+    {
+        if (_inputHandler != null && _inputHandler.shoot)
+        {
+            return _statsComponent.Stats.GetValue(_moveSpeedWhileShootingStat, 10f);
+        }
+
+        return _statsComponent.Stats.GetValue(_moveSpeedStat, 15f);
     }
     private void HandleRotation()
     {
+        if (_isRolling) return;
+
         if (_inputHandler.shoot)
         {
-            // if (_mainCamera == null || Mouse.current == null) return;
-
-            // Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
-            // Ray ray = _mainCamera.ScreenPointToRay(mouseScreenPos);
-
-            // // Intersect mouse ray with a horizontal plane at the player's height (works well for isometric aiming).
-            // Plane plane = new(Vector3.up, new Vector3(0f, transform.position.y, 0f));
-            // if (!plane.Raycast(ray, out float distance)) return;
-
-            // Vector3 hitPoint = ray.GetPoint(distance);
-            // Vector3 toHit = hitPoint - transform.position;
-            // toHit.y = 0f;
-            // if (toHit.sqrMagnitude < 0.0001f) return;
-
-            // float targetAngle = Mathf.Atan2(toHit.x, toHit.z) * Mathf.Rad2Deg;
-            // float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-            // transform.rotation = Quaternion.Euler(0f, angle, 0f);
-
             Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
             Vector3 mousePosition = new(0, 0, 0);
             if (Physics.Raycast(ray, out RaycastHit hit))
@@ -87,8 +91,67 @@ public class PlayerMovement : MonoBehaviour
         transform.rotation = Quaternion.Euler(0f, moveAngle, 0f);
     }
 
+    private void HandleRoll()
+    {
+        // Trigger only on press (not while holding)
+        bool rollPressedThisFrame = _inputHandler.roll && !_rollPressedLastFrame;
+        _rollPressedLastFrame = _inputHandler.roll;
+
+        if (_isRolling)
+        {
+            _rollSpeed = _statsComponent.Stats.GetValue(_moveSpeedStat, 15f) * 0.75f;
+            _characterController.Move(_rollSpeed * Time.deltaTime * _rollDirection);
+            _rollTimeRemaining -= Time.deltaTime;
+            if (_rollTimeRemaining <= 0f)
+            {
+                _isRolling = false;
+            }
+        }
+
+        if (!_canRoll)
+        {
+            RollTimer += Time.deltaTime;
+            if (RollTimer >= GetRollCooldown())
+            {
+                _canRoll = true;
+                _playerAnimations.RollAnimationPlaying = false;
+            }
+        }
+
+        if (rollPressedThisFrame && _canRoll && !_isRolling)
+        {
+            StartRoll();
+        }
+    }
+
+    private void StartRoll()
+    {
+        _health.Invulnerable(_rollAnimation.length);
+        _rollSpeed = GetCurrentMoveSpeed() * 2f;
+
+        Vector2 moveInput = _inputHandler.move;
+        Vector3 inputDirection = new(moveInput.x, 0f, moveInput.y);
+
+        // Prefer Roll in input direction (works well for strafing while shooting),
+        // otherwise Roll forward from current facing.
+        _rollDirection = inputDirection.sqrMagnitude > 0.001f ? inputDirection.normalized : transform.forward.normalized;
+
+        _isRolling = true;
+        _rollTimeRemaining = _rollAnimation.length;
+        _canRoll = false;
+        RollTimer = 0f;
+    }
+
+    private float GetRollCooldown()
+    {
+        if (_rollCooldownStat == null) return 1f;
+        if (_statsComponent == null) return _rollCooldownStat.DefaultBaseValue;
+        return _statsComponent.Stats.GetValue(_rollCooldownStat, _rollCooldownStat.DefaultBaseValue);
+    }
+
     private void Update()
     {
+        HandleRoll();
         HandleMovement();
         HandleRotation();
     }

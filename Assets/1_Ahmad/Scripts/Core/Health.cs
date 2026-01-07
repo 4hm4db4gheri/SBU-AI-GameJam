@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
+[RequireComponent(typeof(StatsComponent))]
 public class Health : MonoBehaviour, IDamageable
 {
     [Header("Stats")]
@@ -18,10 +20,11 @@ public class Health : MonoBehaviour, IDamageable
     public event Action<float, bool> Damaged; // (amount, isCritical)
     public event Action<float> Healed;
 
+    private bool _isInvulnerable = false;
+
     private void Awake()
     {
-        if (_statsComponent == null)
-            _statsComponent = GetComponent<StatsComponent>();
+        _statsComponent = GetComponent<StatsComponent>();
     }
 
     private void Start()
@@ -45,7 +48,7 @@ public class Health : MonoBehaviour, IDamageable
 
     public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitNormal, bool isCritical)
     {
-        if (IsDead)
+        if (IsDead || _isInvulnerable)
             return;
 
         float dmg = Mathf.Max(0f, amount);
@@ -82,5 +85,16 @@ public class Health : MonoBehaviour, IDamageable
 
         if (_destroyOnDeath)
             Destroy(gameObject);
+    }
+
+    public void Invulnerable(float duration)
+    {
+        StartCoroutine(InvulnerableCoroutine(duration));
+    }
+
+    private IEnumerator InvulnerableCoroutine(float duration)
+    {
+        _isInvulnerable = true;
+        yield return new WaitForSeconds(duration);
     }
 }

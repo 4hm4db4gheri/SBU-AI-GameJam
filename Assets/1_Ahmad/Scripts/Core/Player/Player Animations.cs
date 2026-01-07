@@ -6,7 +6,8 @@ public class PlayerAnimations : MonoBehaviour
 {
     private Animator _animator;
     private InputHandler _inputHandler;
-
+    private bool _rollAnimationPlaying = false;
+    public bool RollAnimationPlaying { get => _rollAnimationPlaying; set => _rollAnimationPlaying = value; }
 
     private void Start()
     {
@@ -32,6 +33,11 @@ public class PlayerAnimations : MonoBehaviour
         else
         {
             _animator.SetBool("IsShooting", false);
+        }
+        if (_inputHandler.roll && !_rollAnimationPlaying)
+        {
+            _animator.SetTrigger("Roll");
+            _rollAnimationPlaying = true;
         }
     }
 }

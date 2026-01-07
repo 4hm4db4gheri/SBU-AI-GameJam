@@ -11,6 +11,7 @@ public class InputHandler : MonoBehaviour
     public bool sprint;
     public bool aim;
     public bool shoot;
+    public bool roll;
 
     [Header("Movement Settings")]
     public bool analogMovement;
@@ -52,6 +53,11 @@ public class InputHandler : MonoBehaviour
         ShootInput(context.performed);
     }
 
+    public void OnRoll(InputAction.CallbackContext context)
+    {
+        RollInput(context.performed);
+    }
+
     public void MoveInput(Vector2 newMoveDirection)
     {
         move = newMoveDirection;
@@ -80,6 +86,11 @@ public class InputHandler : MonoBehaviour
     public void ShootInput(bool newShootState)
     {
         shoot = newShootState;
+    }
+
+    public void RollInput(bool newRollState)
+    {
+        roll = newRollState;
     }
 
     // private void OnApplicationFocus(bool hasFocus)
