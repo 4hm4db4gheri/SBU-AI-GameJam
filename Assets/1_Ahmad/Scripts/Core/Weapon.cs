@@ -160,8 +160,9 @@ public class Weapon : MonoBehaviour
 
         if (critChance <= 0f)
             return dmg;
+        
+        isCritical = UnityEngine.Random.Range(0, 100f) < critChance;
 
-        isCritical = UnityEngine.Random.value < critChance;
         return isCritical ? dmg * critMultiplier : dmg;
     }
 

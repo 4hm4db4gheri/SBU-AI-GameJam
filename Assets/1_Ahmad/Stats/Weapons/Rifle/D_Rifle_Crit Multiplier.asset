@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: D_Rifle_Crit Multiplier
   m_EditorClassIdentifier: Assembly-CSharp::StatDefinition
   Key: D_Rifle_Crit Multiplier
-  DefaultBaseValue: 3
+  DefaultBaseValue: 2
   Clamp: 0
   MinValue: 0
   MaxValue: 999999
   HasDefaultUpgrade: 1
   DefaultUpgradeType: 0
-  DefaultUpgradeValue: 1
+  DefaultUpgradeValue: 0.3
   DefaultUpgradeOrder: 0

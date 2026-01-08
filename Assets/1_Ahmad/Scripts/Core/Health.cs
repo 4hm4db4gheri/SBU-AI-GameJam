@@ -85,6 +85,8 @@ public class Health : MonoBehaviour, IDamageable
 
         if (_destroyOnDeath)
             Destroy(gameObject);
+
+        ExperienceManager.Instance.AddExperience(10);
     }
 
     public void Invulnerable(float duration)

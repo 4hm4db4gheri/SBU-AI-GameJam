@@ -19,5 +19,5 @@ MonoBehaviour:
   MaxValue: 999999
   HasDefaultUpgrade: 1
   DefaultUpgradeType: 0
-  DefaultUpgradeValue: 1
+  DefaultUpgradeValue: 0.3
   DefaultUpgradeOrder: 0
