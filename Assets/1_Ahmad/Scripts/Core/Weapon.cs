@@ -2,10 +2,13 @@ using UnityEngine;
 using BigRookGames.Weapons;
 
 [RequireComponent(typeof(GunfireController))]
+[RequireComponent(typeof(StatsComponent))]
 public class Weapon : MonoBehaviour
 {
     private GunfireController _gunfireController;
 
+    [SerializeField] private Animator _animator;
+    [SerializeField] private AnimationClip _attackAnimationClip;
     [Header("Stats (Weapon)")]
     [SerializeField] private StatsComponent _statsComponent;
     [SerializeField] private StatDefinition _damageStat;
@@ -42,8 +45,7 @@ public class Weapon : MonoBehaviour
     private void Start()
     {
         _gunfireController = GetComponent<GunfireController>();
-        if (_statsComponent == null)
-            _statsComponent = GetComponent<StatsComponent>();
+        _statsComponent = GetComponent<StatsComponent>();
         _mainCamera = Camera.main;
     }
 
@@ -56,6 +58,15 @@ public class Weapon : MonoBehaviour
     {
         if (!CanShootNow())
             return;
+
+        // Update animation speed to match cooldown
+        float attacksPerSecond = GetWeaponStat(_attacksPerSecondStat, fallback: 2f);
+        if (attacksPerSecond > 0f && _attackAnimationClip != null && _animator != null)
+        {
+            float cooldown = 1f / attacksPerSecond;
+            float animationSpeedMultiplier = _attackAnimationClip.length / cooldown;
+            _animator.SetFloat("AttackSpeed", animationSpeedMultiplier);
+        }
 
         _gunfireController.FireWeapon();
 
@@ -160,7 +171,7 @@ public class Weapon : MonoBehaviour
 
         if (critChance <= 0f)
             return dmg;
-        
+
         isCritical = UnityEngine.Random.Range(0, 100f) < critChance;
 
         return isCritical ? dmg * critMultiplier : dmg;

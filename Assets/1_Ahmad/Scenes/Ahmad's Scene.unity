@@ -1649,6 +1649,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88b0c4289adcd144c82a4a16a131c5a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Weapon
+  _animator: {fileID: 1568672196}
+  _attackAnimationClip: {fileID: 7400000, guid: 146189077246ba540a4c3adab332ed4a, type: 2}
   _statsComponent: {fileID: 1943891582}
   _damageStat: {fileID: 11400000, guid: 5d6fb162343b26e4e8c4ffd53becc6e1, type: 2}
   _critChanceStat: {fileID: 11400000, guid: 70c1e5aa929576b489abc85d88375011, type: 2}
