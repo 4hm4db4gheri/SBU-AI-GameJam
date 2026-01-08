@@ -6,8 +6,9 @@ using UnityEngine;
 public sealed class StatsComponent : MonoBehaviour
 {
     [SerializeField] private StatsConfig _config;
-
     private StatsContainer _stats;
+
+    public StatsConfig Config => _config;
     public StatsContainer Stats => _stats;
 
     private void Awake()

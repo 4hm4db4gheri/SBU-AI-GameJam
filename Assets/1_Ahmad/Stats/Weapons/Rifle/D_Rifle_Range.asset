@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: D_Rifle_Range
   m_EditorClassIdentifier: Assembly-CSharp::StatDefinition
   Key: D_Rifle_Range
-  DefaultBaseValue: 1000
+  DefaultBaseValue: 500
   Clamp: 0
   MinValue: 0
   MaxValue: 999999
   HasDefaultUpgrade: 1
   DefaultUpgradeType: 0
-  DefaultUpgradeValue: 100
+  DefaultUpgradeValue: 50
   DefaultUpgradeOrder: 0

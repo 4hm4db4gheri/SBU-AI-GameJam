@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: D_Rifle_Bullet Speed
   m_EditorClassIdentifier: Assembly-CSharp::StatDefinition
   Key: D_Rifle_Bullet Speed
-  DefaultBaseValue: 100
+  DefaultBaseValue: 60
   Clamp: 0
   MinValue: 0
   MaxValue: 999999
   HasDefaultUpgrade: 1
   DefaultUpgradeType: 0
-  DefaultUpgradeValue: 1
+  DefaultUpgradeValue: 2
   DefaultUpgradeOrder: 0

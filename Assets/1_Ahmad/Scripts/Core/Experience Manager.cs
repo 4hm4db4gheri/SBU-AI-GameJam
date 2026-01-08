@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+[DefaultExecutionOrder(-100)]
 public class ExperienceManager : MonoBehaviour
 {
 
@@ -18,6 +19,19 @@ public class ExperienceManager : MonoBehaviour
     [SerializeField] private int _startingExperience = 0;
 
     public static ExperienceManager Instance { get; private set; }
+
+    public static bool TryGetInstance(out ExperienceManager instance)
+    {
+        instance = Instance;
+        if (instance != null) return true;
+
+        instance = FindFirstObjectByType<ExperienceManager>();
+
+        if (instance == null) return false;
+
+        Instance = instance;
+        return true;
+    }
 
     private int _currentExperience;
     private int _currentLevel = 0;
@@ -36,12 +50,25 @@ public class ExperienceManager : MonoBehaviour
     private void Awake()
     {
         if (Instance == null)
+        {
             Instance = this;
-        else
+        }
+        else if (Instance != this)
+        {
             Destroy(gameObject);
+            return;
+        }
         // Initialize from inspector values by default.
         _currentLevel = Mathf.Max(0, _startingLevel);
         _currentExperience = Mathf.Max(0, _startingExperience);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            AddExperience(50);
+        }
     }
 
     private void Start()
