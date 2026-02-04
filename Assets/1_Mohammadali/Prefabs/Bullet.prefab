@@ -127,7 +127,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BulletController
   speed: 10
-  damage: 120
+  damage: 5
 --- !u!54 &4404094694815488818
 Rigidbody:
   m_ObjectHideFlags: 0

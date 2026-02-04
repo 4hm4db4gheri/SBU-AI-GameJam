@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3694163132431153901}
   - component: {fileID: 1408836491399855483}
   - component: {fileID: 668153059157647933}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -123,7 +123,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7754469822533161070}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Shape
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -159,7 +159,7 @@ GameObject:
   - component: {fileID: 8577636109875697708}
   - component: {fileID: 3328620957933174834}
   - component: {fileID: 2675767341883090312}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -271,7 +271,7 @@ GameObject:
   - component: {fileID: 4141845475956545979}
   - component: {fileID: 8863464175420876818}
   - component: {fileID: -5475927101841983173}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: MeleeEnemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -309,6 +309,13 @@ MonoBehaviour:
   moveSpeed: 5
   stopDistance: 1.5
   detectionRadius: 20
+  viewAngle: 120
+  targetMask:
+    serializedVersion: 2
+    m_Bits: 128
+  obstructionMask:
+    serializedVersion: 2
+    m_Bits: 512
   attackDamage: 10
   attackRate: 1.5
   dodgeForce: 100

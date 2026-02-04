@@ -1,8 +1,6 @@
-using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using Random = UnityEngine.Random;
 
 public class MeleeEnemy : MonoBehaviour
 {
@@ -10,6 +8,16 @@ public class MeleeEnemy : MonoBehaviour
     public float moveSpeed = 5f;
     public float stopDistance = 2f;
     public float detectionRadius = 25f;
+
+    [Header("Detection Settings")]
+    public float viewAngle = 120f;
+    public LayerMask targetMask;      
+    public LayerMask obstructionMask; 
+
+    [Header("Memory Settings")]
+    public float searchWaitTime = 2f;
+    private Vector3 lastKnownPosition;
+    private bool isSearching = false;
 
     [Header("Combat Settings")]
     public float attackDamage = 10f;
@@ -27,81 +35,113 @@ public class MeleeEnemy : MonoBehaviour
     private void OnEnable()
     {
         rb = GetComponent<Rigidbody>();
-        rb.linearVelocity = Vector3.zero;
+        if(rb != null) rb.linearVelocity = Vector3.zero;
+        target = null; 
+        isSearching = false;
+        canDodge = true;
         StopAllCoroutines();
     }
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        // Freeze rotation so the physics engine doesn't tip the enemy over
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         
-        InvokeRepeating("FindClosestTarget", 0f, 0.5f);
+        // Scan for visible targets 5 times a second
+        InvokeRepeating("FindVisibleTarget", 0f, 0.2f);
     }
 
     void FixedUpdate()
     {
-        if (target == null) return;
-
-        float distance = Vector3.Distance(transform.position, target.position);
-
-        if (distance > stopDistance)
+        // STATE 1: TARGET IN SIGHT
+        if (target != null)
         {
-            MoveTowardsTarget();
-        }
-        else
-        {
-            // Stop moving when in range to attack
-            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0); 
-            
-            if (Time.time >= nextAttackTime)
+            float distance = Vector3.Distance(transform.position, target.position);
+
+            if (distance > stopDistance)
             {
-                Attack();
+                MoveTo(target.position);
+            }
+            else
+            {
+                rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0); 
+                if (Time.time >= nextAttackTime) Attack();
+            }
+
+            if (distance < 6f && canDodge) StartCoroutine(DodgeRoutine());
+        }
+        // STATE 2: SEARCHING LAST KNOWN POSITION
+        else if (isSearching)
+        {
+            float distToMemory = Vector3.Distance(transform.position, lastKnownPosition);
+            
+            if (distToMemory > 1.2f) // Arrival threshold
+            {
+                MoveTo(lastKnownPosition);
+            }
+            else
+            {
+                rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
+                StartCoroutine(SearchExhaustion());
             }
         }
-
-        // Dodge logic
-        if (distance < 6f && canDodge)
+        // STATE 3: IDLE
+        else
         {
-            StartCoroutine(DodgeRoutine());
+            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
         }
     }
 
-    void FindClosestTarget()
+    void FindVisibleTarget()
     {
-        // Find all potential targets (Player and Allies)
-        List<GameObject> potentialTargets = new List<GameObject>();
-        potentialTargets.AddRange(GameObject.FindGameObjectsWithTag("Player"));
-        // potentialTargets.AddRange(GameObject.FindGameObjectsWithTag("Ally"));
-
+        Collider[] targetsInRadius = Physics.OverlapSphere(transform.position, detectionRadius, targetMask);
         float closestDistance = Mathf.Infinity;
         Transform bestTarget = null;
 
-        foreach (GameObject obj in potentialTargets)
+        foreach (Collider t in targetsInRadius)
         {
-            float dist = Vector3.Distance(transform.position, obj.transform.position);
-            if (dist < closestDistance && dist <= detectionRadius)
+            Transform potentialTarget = t.transform;
+            Vector3 dirToTarget = (potentialTarget.position - transform.position).normalized;
+
+            if (Vector3.Angle(transform.forward, dirToTarget) < viewAngle / 2)
             {
-                closestDistance = dist;
-                bestTarget = obj.transform;
+                float distToTarget = Vector3.Distance(transform.position, potentialTarget.position);
+
+                if (!Physics.Raycast(transform.position + Vector3.up, dirToTarget, distToTarget, obstructionMask))
+                {
+                    if (distToTarget < closestDistance)
+                    {
+                        closestDistance = distToTarget;
+                        bestTarget = potentialTarget;
+                    }
+                }
             }
         }
-        target = bestTarget;
+
+        if (bestTarget != null)
+        {
+            target = bestTarget;
+            lastKnownPosition = target.position; // Refresh memory
+            isSearching = false;
+        }
+        else if (target != null)
+        {
+            // Lost sight, start searching
+            target = null;
+            isSearching = true;
+        }
     }
 
-    void MoveTowardsTarget()
+    void MoveTo(Vector3 position)
     {
-        Vector3 direction = (target.position - transform.position);
-        direction.y = 0; // Keep movement on the horizontal plane
+        Vector3 direction = (position - transform.position);
+        direction.y = 0;
         direction.Normalize();
 
-        // Movement
         Vector3 moveVelocity = direction * moveSpeed;
-        moveVelocity.y = rb.linearVelocity.y; // Preserve gravity
+        moveVelocity.y = rb.linearVelocity.y;
         rb.linearVelocity = moveVelocity;
 
-        // Rotation: Look at target
         if (direction != Vector3.zero)
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
@@ -113,24 +153,36 @@ public class MeleeEnemy : MonoBehaviour
     {
         nextAttackTime = Time.time + attackRate;
         Debug.Log("Melee Hit on: " + target.name);
-        // Apply damage to target script here
+        // target.GetComponent<Health>().TakeDamage(attackDamage);
+    }
+
+    IEnumerator SearchExhaustion()
+    {
+        yield return new WaitForSeconds(searchWaitTime);
+        if (target == null) isSearching = false; 
     }
 
     IEnumerator DodgeRoutine()
     {
+        if (target == null) yield break;
         canDodge = false;
-
-        // Calculate a side-step (cross product of up and direction to target)
-        Vector3 directionToTarget = (target.position - transform.position).normalized;
-        Vector3 sideDir = Vector3.Cross(directionToTarget, Vector3.up);
-
-        // Randomly pick left or right
+        Vector3 sideDir = Vector3.Cross((target.position - transform.position).normalized, Vector3.up);
         if (Random.value > 0.5f) sideDir *= -1;
-
-        // Apply impulse
         rb.AddForce(sideDir * dodgeForce, ForceMode.Impulse);
-
         yield return new WaitForSeconds(dodgeCooldown);
         canDodge = true;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, detectionRadius);
+        
+        if (isSearching)
+        {
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawLine(transform.position, lastKnownPosition);
+            Gizmos.DrawWireCube(lastKnownPosition, new Vector3(0.5f, 0.5f, 0.5f));
+        }
     }
 }
