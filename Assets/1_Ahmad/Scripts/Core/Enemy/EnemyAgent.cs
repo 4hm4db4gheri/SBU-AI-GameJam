@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(StatsComponent))]
-[RequireComponent(typeof(Health))]
+[RequireComponent(typeof(PlayerHealth))]
 public sealed class EnemyAgent : MonoBehaviour
 {
     [Header("Stats")]
