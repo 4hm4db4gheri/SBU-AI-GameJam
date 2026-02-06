@@ -44,25 +44,25 @@ namespace BigRookGames.Weapons
 
         private void Update()
         {
-            // --- If rotate is set to true, rotate the weapon in scene ---
-            if (rotate)
-            {
-                transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y 
-                                                                        + rotationSpeed, transform.localEulerAngles.z);
-            }
+            // // --- If rotate is set to true, rotate the weapon in scene ---
+            // if (rotate)
+            // {
+            //     transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y 
+            //                                                             + rotationSpeed, transform.localEulerAngles.z);
+            // }
 
-            // --- Fires the weapon if the delay time period has passed since the last shot ---
-            if (autoFire && ((timeLastFired + shotDelay) <= Time.time))
-            {
-                FireWeapon();
-            }
+            // // --- Fires the weapon if the delay time period has passed since the last shot ---
+            // if (autoFire && ((timeLastFired + shotDelay) <= Time.time))
+            // {
+            //     FireWeapon();
+            // }
 
-            // --- Toggle scope based on public variable value ---
-            if(scope && lastScopeState != scopeActive)
-            {
-                lastScopeState = scopeActive;
-                scope.SetActive(scopeActive);
-            }
+            // // --- Toggle scope based on public variable value ---
+            // if(scope && lastScopeState != scopeActive)
+            // {
+            //     lastScopeState = scopeActive;
+            //     scope.SetActive(scopeActive);
+            // }
         }
 
         /// <summary>

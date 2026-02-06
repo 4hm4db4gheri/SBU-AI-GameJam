@@ -5,13 +5,13 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(StatsComponent))]
 [RequireComponent(typeof(PlayerAnimations))]
-[RequireComponent(typeof(Health))]
+[RequireComponent(typeof(PlayerHealth))]
 public class PlayerMovement : MonoBehaviour
 {
     private InputHandler _inputHandler;
     private CharacterController _characterController;
     private PlayerAnimations _playerAnimations;
-    private Health _health;
+    private PlayerHealth _health;
     [Header("Aim (match weapon gizmo)")]
     [Tooltip("If set, player rotation while aiming/shooting will match this weapon's aim ray direction (green gizmo ray). If null, a Weapon will be found in children.")]
     [SerializeField] private Weapon _weaponForAim;
@@ -42,7 +42,7 @@ public class PlayerMovement : MonoBehaviour
         _inputHandler = GetComponent<InputHandler>();
         _characterController = GetComponent<CharacterController>();
         _playerAnimations = GetComponent<PlayerAnimations>();
-        _health = GetComponent<Health>();
+        _health = GetComponent<PlayerHealth>();
         if (_statsComponent == null) _statsComponent = GetComponent<StatsComponent>();
         if (_mainCamera == null) _mainCamera = Camera.main;
         if (_weaponForAim == null) _weaponForAim = GetComponentInChildren<Weapon>();
