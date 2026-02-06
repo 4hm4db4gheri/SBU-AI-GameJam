@@ -2,8 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(StatsComponent))]
-public class Health : MonoBehaviour, IDamageable
+public class PlayerHealth : MonoBehaviour, IDamageable
 {
     [Header("Stats")]
     [SerializeField] private StatsComponent _statsComponent;
@@ -16,7 +15,7 @@ public class Health : MonoBehaviour, IDamageable
     public float Max => _statsComponent != null ? _statsComponent.Stats.GetValue(_maxHealthStat, 100f) : 100f;
     public bool IsDead => Current <= 0f;
 
-    public event Action<Health> Died;
+    public event Action<PlayerHealth> Died;
     public event Action<float, bool> Damaged; // (amount, isCritical)
     public event Action<float> Healed;
 

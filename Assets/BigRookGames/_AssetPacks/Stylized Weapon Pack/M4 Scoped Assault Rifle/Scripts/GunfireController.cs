@@ -16,6 +16,8 @@ namespace BigRookGames.Weapons
         // --- Config ---
         public bool autoFire;
         public float shotDelay = .5f;
+        public bool rotate = true;
+        public float rotationSpeed = .25f;
 
         // --- Options ---
         public GameObject scope;
@@ -39,6 +41,30 @@ namespace BigRookGames.Weapons
             timeLastFired = 0;
             lastScopeState = scopeActive;
         }
+
+        private void Update()
+        {
+            // --- If rotate is set to true, rotate the weapon in scene ---
+            if (rotate)
+            {
+                transform.localEulerAngles = new Vector3(transform.localEulerAngles.x, transform.localEulerAngles.y 
+                                                                        + rotationSpeed, transform.localEulerAngles.z);
+            }
+
+            // --- Fires the weapon if the delay time period has passed since the last shot ---
+            if (autoFire && ((timeLastFired + shotDelay) <= Time.time))
+            {
+                FireWeapon();
+            }
+
+            // --- Toggle scope based on public variable value ---
+            if(scope && lastScopeState != scopeActive)
+            {
+                lastScopeState = scopeActive;
+                scope.SetActive(scopeActive);
+            }
+        }
+
         /// <summary>
         /// Creates an instance of the muzzle flash.
         /// Also creates an instance of the audioSource so that multiple shots are not overlapped on the same audio source.
