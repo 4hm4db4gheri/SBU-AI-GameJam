@@ -79,7 +79,9 @@ public class Bullet : MonoBehaviour
         _hasHit = true;
 
         if (other.TryGetComponent<IDamageable>(out var damageable))
+        {
             damageable.TakeDamage(_damage, hitPoint, hitNormal, _isCritical);
+        }
 
         Destroy(gameObject);
     }

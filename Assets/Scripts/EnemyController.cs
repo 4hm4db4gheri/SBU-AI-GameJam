@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.UI; // 1. اضافه شدن کتابخانه UI
+using TMPro; // 1. اضافه شدن کتابخانه UI
 
 public class EnemyController : MonoBehaviour
 {
@@ -15,7 +15,7 @@ public class EnemyController : MonoBehaviour
     public float attackCooldown = 1.5f;
 
     [Header("UI Settings")]
-    public Text statusText; // 2. متغیر برای اتصال متن بالای سر
+    public TMP_Text statusText; // 2. متغیر برای اتصال متن بالای سر
 
     // متغیرهای داخلی
     private EnemyBrain brain;
@@ -45,7 +45,7 @@ public class EnemyController : MonoBehaviour
         else
         {
             attackRange = 2f;
-            agent.stoppingDistance = 1.5f;
+            agent.stoppingDistance = 1f;
         }
     }
 
@@ -76,7 +76,10 @@ public class EnemyController : MonoBehaviour
         // حالت دوم: حمله (کد قبلی)
         else if (currentTarget != null)
         {
+            Debug.Log("going to attack target");
             float distance = Vector3.Distance(transform.position, currentTarget.position);
+
+            Debug.Log("distance: " + distance);
 
             if (distance > agent.stoppingDistance)
             {
@@ -85,12 +88,14 @@ public class EnemyController : MonoBehaviour
             else
             {
                 // چرخش به سمت هدف
+                Debug.Log("Rotating to target");
                 Vector3 lookPos = currentTarget.position;
                 lookPos.y = transform.position.y;
                 transform.LookAt(lookPos);
 
                 if (Time.time > lastAttackTime + attackCooldown)
                 {
+                    Debug.Log("Attacking target");
                     PerformAttack();
                     lastAttackTime = Time.time;
                 }
@@ -144,8 +149,9 @@ public class EnemyController : MonoBehaviour
         {
             Debug.Log(gameObject.name + " Punched " + currentTarget.name);
             // وارد کردن دمیج واقعی
-            Health targetHealth = currentTarget.GetComponent<Health>();
-            if (targetHealth) targetHealth.TakeDamage(10);
+            PlayerHealth targetHealth = currentTarget.GetComponent<PlayerHealth>();
+            if (targetHealth) targetHealth.TakeDamage(100);
+            Debug.Log("attacked player");
 
             reward = (currentTarget.CompareTag("Player")) ? 10f : 2f;
         }
@@ -174,5 +180,16 @@ public class EnemyController : MonoBehaviour
             else if (currentAction == EnemyBrain.Action.AttackPlayer) statusText.color = Color.yellow;
             else statusText.color = Color.white;
         }
+    }
+
+    void OnDrawGizmos()
+    {
+        if (currentTarget != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(currentTarget.position, agent.stoppingDistance);
+        }
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }

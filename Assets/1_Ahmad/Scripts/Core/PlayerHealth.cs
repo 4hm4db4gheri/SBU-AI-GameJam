@@ -11,12 +11,11 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     [Header("Options")]
     [SerializeField] private bool _destroyOnDeath = true;
 
-    public float Current { get; private set; }
-    public float Max => _statsComponent != null ? _statsComponent.Stats.GetValue(_maxHealthStat, 100f) : 100f;
-    public bool IsDead => Current <= 0f;
+    public float currentHealth { get; private set; }
+    public float MaxHealth => _statsComponent != null ? _statsComponent.Stats.GetValue(_maxHealthStat, 100f) : 100f;
+    public bool IsDead => currentHealth <= 0f;
 
     public event Action<PlayerHealth> Died;
-    public event Action<float, bool> Damaged; // (amount, isCritical)
     public event Action<float> Healed;
 
     private bool _isInvulnerable = false;
@@ -28,7 +27,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
     private void Start()
     {
-        Current = Max;
+        currentHealth = MaxHealth;
         if (_statsComponent != null)
             _statsComponent.Stats.StatValueChanged += OnStatValueChanged;
     }
@@ -42,7 +41,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     private void OnStatValueChanged(StatDefinition def, float newValue)
     {
         if (def == _maxHealthStat)
-            Current = Mathf.Clamp(Current, 0f, newValue);
+            currentHealth = Mathf.Clamp(currentHealth, 0f, newValue);
     }
 
     public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitNormal, bool isCritical)
@@ -54,11 +53,14 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         if (dmg <= 0f)
             return;
 
-        Current = Mathf.Max(0f, Current - dmg);
-        Damaged?.Invoke(dmg, isCritical);
+        currentHealth = Mathf.Max(0f, currentHealth - dmg);
 
-        if (Current <= 0f)
+        if (currentHealth <= 0f)
             Die();
+    }
+    public void TakeDamage(float amount)
+    {
+        TakeDamage(amount, Vector3.zero, Vector3.zero, false);
     }
 
     public void Heal(float amount)
@@ -70,22 +72,20 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         if (heal <= 0f)
             return;
 
-        float before = Current;
-        Current = Mathf.Min(Max, Current + heal);
-        Healed?.Invoke(Current - before);
+        float before = currentHealth;
+        currentHealth = Mathf.Min(MaxHealth, currentHealth + heal);
+        Healed?.Invoke(currentHealth - before);
     }
 
     private void Die()
     {
         if (IsDead == false)
-            Current = 0f;
+            currentHealth = 0f;
 
         Died?.Invoke(this);
 
         if (_destroyOnDeath)
             Destroy(gameObject);
-
-        ExperienceManager.Instance.AddExperience(10);
     }
 
     public void Invulnerable(float duration)

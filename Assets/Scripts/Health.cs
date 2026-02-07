@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class Health : MonoBehaviour
+public class Health : MonoBehaviour, IDamageable
 {
     public float maxHealth = 100f;
     public float currentHealth;
@@ -36,6 +36,17 @@ public class Health : MonoBehaviour
             Die();
         }
     }
+    public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitNormal, bool isCritical)
+    {
+        TakeDamage(amount);
+        PlayHitEffect(amount, isCritical);
+    }
+
+    void PlayHitEffect(float amount, bool isCritical)
+    {
+        if (isCritical) { }
+        else { }
+    }
 
     void Die()
     {
@@ -47,9 +58,12 @@ public class Health : MonoBehaviour
             Debug.Log(gameObject.name + " Died and learned a hard lesson!");
         }
 
+        ExperienceManager.Instance.AddExperience(10);
+
         // اگر پلیر یا یار مرد هم لاگ بده
         Debug.Log(gameObject.name + " was destroyed.");
 
         Destroy(gameObject);
     }
+
 }
