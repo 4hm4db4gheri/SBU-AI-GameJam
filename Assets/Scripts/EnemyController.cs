@@ -2,6 +2,9 @@ using UnityEngine;
 using UnityEngine.AI;
 using TMPro; // 1. اضافه شدن کتابخانه UI
 
+[RequireComponent(typeof(EnemyBrain))]
+[RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(Health))]
 public class EnemyController : MonoBehaviour
 {
     // تنظیمات نوع دشمن
@@ -11,7 +14,8 @@ public class EnemyController : MonoBehaviour
     [Header("Combat Settings")]
     public GameObject bulletPrefab;
     public Transform firePoint;
-    public float attackRange = 2f;
+    public float meleeAttackRange = 2f;
+    public float rangeAttackRange = 2f;
     public float attackCooldown = 1.5f;
 
     [Header("UI Settings")]
@@ -39,13 +43,11 @@ public class EnemyController : MonoBehaviour
 
         if (type == EnemyType.Ranged)
         {
-            attackRange = 10f;
-            agent.stoppingDistance = 8f;
+            agent.stoppingDistance = rangeAttackRange;
         }
         else
         {
-            attackRange = 2f;
-            agent.stoppingDistance = 1f;
+            agent.stoppingDistance = meleeAttackRange;
         }
     }
 
@@ -76,26 +78,38 @@ public class EnemyController : MonoBehaviour
         // حالت دوم: حمله (کد قبلی)
         else if (currentTarget != null)
         {
-            Debug.Log("going to attack target");
-            float distance = Vector3.Distance(transform.position, currentTarget.position);
+            float radius = (type == EnemyType.Ranged) ? rangeAttackRange : meleeAttackRange;
 
-            Debug.Log("distance: " + distance);
+            // Sphere: center = currentTarget.position, radius = attack range
+            // Destination = closest point on that sphere to the agent
+            Vector3 direction = transform.position - currentTarget.position;
+            direction.Normalize();
+            Vector3 destination = new Vector3(currentTarget.position.x + direction.x * radius, currentTarget.position.y, currentTarget.position.z + direction.z * radius);
 
-            if (distance > agent.stoppingDistance)
+            float distance = Vector3.Distance(transform.position, destination);
+
+            if (distance > 1)
             {
-                agent.SetDestination(currentTarget.position);
+                // Use a small stopping distance so the agent actually reaches the blue sphere (attack position).
+                // Otherwise with stoppingDistance = 2, the agent stops 2m short and never gets there.
+                agent.stoppingDistance = 0.2f;
+                agent.SetDestination(destination);
             }
             else
             {
+                // Back at attack range; restore stopping distance for next approach if target moves
+                if (type == EnemyType.Ranged)
+                    agent.stoppingDistance = rangeAttackRange;
+                else
+                    agent.stoppingDistance = meleeAttackRange;
+
                 // چرخش به سمت هدف
-                Debug.Log("Rotating to target");
                 Vector3 lookPos = currentTarget.position;
                 lookPos.y = transform.position.y;
                 transform.LookAt(lookPos);
 
                 if (Time.time > lastAttackTime + attackCooldown)
                 {
-                    Debug.Log("Attacking target");
                     PerformAttack();
                     lastAttackTime = Time.time;
                 }
@@ -150,8 +164,7 @@ public class EnemyController : MonoBehaviour
             Debug.Log(gameObject.name + " Punched " + currentTarget.name);
             // وارد کردن دمیج واقعی
             PlayerHealth targetHealth = currentTarget.GetComponent<PlayerHealth>();
-            if (targetHealth) targetHealth.TakeDamage(100);
-            Debug.Log("attacked player");
+            if (targetHealth) targetHealth.TakeDamage(10);
 
             reward = (currentTarget.CompareTag("Player")) ? 10f : 2f;
         }
@@ -187,9 +200,17 @@ public class EnemyController : MonoBehaviour
         if (currentTarget != null)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(currentTarget.position, agent.stoppingDistance);
+            Gizmos.DrawWireSphere(currentTarget.position, meleeAttackRange);
+            Gizmos.color = Color.blue;
+            Vector3 direction = transform.position - currentTarget.position;
+            direction.Normalize();
+            Vector3 destination = new(currentTarget.position.x + direction.x * agent.stoppingDistance, currentTarget.position.y, currentTarget.position.z + direction.z * agent.stoppingDistance);
+            Gizmos.DrawWireSphere(destination, 0.1f);
+
+            Gizmos.color = Color.beige;
+            Gizmos.DrawLine(transform.position, destination);
         }
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.DrawWireSphere(transform.position, meleeAttackRange);
     }
 }

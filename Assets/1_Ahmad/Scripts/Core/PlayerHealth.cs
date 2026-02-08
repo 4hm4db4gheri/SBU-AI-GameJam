@@ -31,7 +31,6 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         if (_statsComponent != null)
             _statsComponent.Stats.StatValueChanged += OnStatValueChanged;
     }
-
     private void OnDestroy()
     {
         if (_statsComponent != null)
@@ -97,5 +96,6 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     {
         _isInvulnerable = true;
         yield return new WaitForSeconds(duration);
+        _isInvulnerable = false;
     }
 }
