@@ -18,9 +18,6 @@ public class EnemyController : MonoBehaviour
     public float rangeAttackRange = 2f;
     public float attackCooldown = 1.5f;
 
-    [Header("UI Settings")]
-    public TMP_Text statusText; // 2. متغیر برای اتصال متن بالای سر
-
     // متغیرهای داخلی
     private EnemyBrain brain;
     private NavMeshAgent agent;
@@ -58,7 +55,6 @@ public class EnemyController : MonoBehaviour
         if (thinkTimer > 0.5f)
         {
             DecideTarget();
-            UpdateUI(); // آپدیت کردن متن بالای سر
             thinkTimer = 0;
         }
 
@@ -179,20 +175,6 @@ public class EnemyController : MonoBehaviour
         }
 
         brain.Learn(currentState, currentAction, reward);
-    }
-
-    // 5. نمایش وضعیت در UI
-    void UpdateUI()
-    {
-        if (statusText != null)
-        {
-            statusText.text = $"{currentState}\n{currentAction}";
-
-            // تغییر رنگ متن برای زیبایی
-            if (currentState == EnemyBrain.State.LowHealth) statusText.color = Color.red;
-            else if (currentAction == EnemyBrain.Action.AttackPlayer) statusText.color = Color.yellow;
-            else statusText.color = Color.white;
-        }
     }
 
     void OnDrawGizmos()

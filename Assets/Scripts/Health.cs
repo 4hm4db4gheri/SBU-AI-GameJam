@@ -1,5 +1,11 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using NaughtyAttributes;
+using Unity.VisualScripting;
 
+[RequireComponent(typeof(EnemyBrain))]
+[RequireComponent(typeof(HitEffect))]
 public class Health : MonoBehaviour, IDamageable
 {
     public float maxHealth = 100f;
@@ -8,16 +14,22 @@ public class Health : MonoBehaviour, IDamageable
     // اگر این تیک خورده باشد، یعنی این آبجکت دشمن است و باید یاد بگیرد
     public bool isAI = false;
 
+
+
     private EnemyBrain brain; // برای یادگیری (اگر دشمن بود)
+    private HitEffect _hitEffect;
 
     void Start()
     {
         currentHealth = maxHealth;
+        _hitEffect = GetComponent<HitEffect>();
         if (isAI)
         {
             brain = GetComponent<EnemyBrain>();
         }
     }
+
+
 
     public void TakeDamage(float amount)
     {
@@ -39,13 +51,8 @@ public class Health : MonoBehaviour, IDamageable
     public void TakeDamage(float amount, Vector3 hitPoint, Vector3 hitNormal, bool isCritical)
     {
         TakeDamage(amount);
-        PlayHitEffect(amount, isCritical);
-    }
-
-    void PlayHitEffect(float amount, bool isCritical)
-    {
-        if (isCritical) { }
-        else { }
+        Debug.Log(_hitEffect == null);
+        _hitEffect.PlayHitEffect(amount, isCritical);
     }
 
     void Die()
