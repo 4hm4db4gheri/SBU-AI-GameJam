@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerHealth : MonoBehaviour, IDamageable
 {
@@ -10,6 +11,9 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
     [Header("Options")]
     [SerializeField] private bool _destroyOnDeath = true;
+
+    [Header("UI")]
+    [SerializeField] private Slider slider;
 
     public float currentHealth { get; private set; }
     public float MaxHealth => _statsComponent != null ? _statsComponent.Stats.GetValue(_maxHealthStat, 100f) : 100f;
@@ -53,10 +57,17 @@ public class PlayerHealth : MonoBehaviour, IDamageable
             return;
 
         currentHealth = Mathf.Max(0f, currentHealth - dmg);
+        UpdateUI();
 
         if (currentHealth <= 0f)
             Die();
     }
+
+    private void UpdateUI()
+    {
+        slider.value = currentHealth / 100;
+    }
+
     public void TakeDamage(float amount)
     {
         TakeDamage(amount, Vector3.zero, Vector3.zero, false);
