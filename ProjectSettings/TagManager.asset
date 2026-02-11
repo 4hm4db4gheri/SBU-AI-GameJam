@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Enemy
   - Ally
+  - big
   layers:
   - Default
   - TransparentFX
@@ -17,8 +18,8 @@ TagManager:
   - Player
   - Ally
   - Obstacle
-  - 
-  - 
+  - big
+  - small
   - 
   - 
   - 

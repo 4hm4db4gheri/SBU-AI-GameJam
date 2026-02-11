@@ -167,5 +167,13 @@ public class PlayerMovement : MonoBehaviour
         HandleRoll();
         HandleMovement();
         HandleRotation();
+        Vector3 pos = transform.position;
+
+        if (pos.y != 0f)
+        {
+            pos.y = 0f;
+            transform.position = pos;
+            //Debug.Log("bia payin dozd naan");
+        }
     }
 }
